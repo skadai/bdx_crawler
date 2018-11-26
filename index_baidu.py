@@ -1,3 +1,15 @@
+# -*- coding: utf-8 -*-
+"""
+-------------------------------------------------
+   File Name：    index_baidu
+   Description :
+   Author :       changsk
+   date：          2018/10/30
+-------------------------------------------------
+   Change Activity:
+                   2018/10/30:
+-------------------------------------------------
+"""
 import os
 import time
 import math
