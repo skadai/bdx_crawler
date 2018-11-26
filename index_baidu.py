@@ -101,7 +101,7 @@ class Crawler:
 
         err_count = 0
         while 1:
-            if x > 2000 or err_count > 20:
+            if x > 2000 or err_count > 30:
                 click.echo(f'循环次数过多, 跳出<x: {x}>')
                 break
 
@@ -119,10 +119,9 @@ class Crawler:
                     datas.append(ret[0::2])
                     click.echo(f'已拿到最终数据 {ret[0::2]},跳出: --x-cord {x}')
                     break
-                elif arrow.get(datas[-1][0]) == arrow.get(end).shift(days=-1):
-                    click.echo('快到终点，调整delta')
+                elif arrow.get(datas[-1][0]).shift(days=1) == arrow.get(end):
+                    click.echo(f'快到终点，调整delta{ret[0]}')
                     x += delta/4
-
                 else:
                     cur_date = arrow.get(ret[0])
                     last_date = arrow.get(datas[-1][0])
@@ -132,7 +131,10 @@ class Crawler:
                     elif cur_date == last_date.shift(days=1):
                         datas.append(ret[0::2])
                         click.echo(f'add, {ret[0::2]}, ---x-cord {x}')
-                        x += delta
+                        if cur_date.shift(days=1) == arrow.get(end):
+                            x += delta/4
+                        else:
+                            x += delta
                     else:
                         x += delta
             else:
