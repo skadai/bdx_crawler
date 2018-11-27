@@ -15,6 +15,8 @@ import time
 import math
 import re
 import html
+import functools
+import multiprocessing
 
 import requests
 import arrow
@@ -32,10 +34,10 @@ class Crawler:
     def __init__(self):
         chrome_options = Options()
         chrome_options.add_argument('--headless')
-        # self.driver = webdriver.Chrome(chrome_options=chrome_options)
-        self.driver = webdriver.Chrome()
+        self.driver = webdriver.Chrome(chrome_options=chrome_options)
+        # self.driver = webdriver.Chrome()
         self.driver.maximize_window()
-        self.driver.set_window_size(1280,720)
+        self.driver.set_window_size(1920,1080)
         self.base_url = "http://index.baidu.com/v2/main/index.html#/trend/{}?words={}"
         self.max_try = 3
         self.base_cookie = {}
@@ -92,7 +94,7 @@ class Crawler:
         if len(kws) == 0:
             return False, []
         url = self.make_url(kws)
-        click.echo(url)
+        # click.echo(url)
         self.driver.get(url)
         count, charts = 0, []
         # 需要确认已拿到百度指数的数据
@@ -103,7 +105,7 @@ class Crawler:
                 if len(charts) > 0:
                     break
             except Exception as e:
-                click.echo(f'还没有加载出来页面...{e}')
+                # click.echo(f'还没有加载出来页面...{e}')
                 self.driver.get(url)
                 time.sleep(3)
             count += 1
@@ -118,7 +120,7 @@ class Crawler:
                 text = self.driver.find_element_by_css_selector('.words').text
                 return False, text.split(',')
             except Exception as e:
-                click.echo(f'未检出异常 {count+1}次')
+                # click.echo(f'未检出异常 {count+1}次')
                 pass
             count += 1
         return True, []
@@ -129,7 +131,7 @@ class Crawler:
         # 设置扫描步频
         date_picker = self.driver.find_element_by_class_name('index-date-range-picker')
         start, end = date_picker.text.split('~')
-        click.echo(f'start:{start}, end: {end}')
+        # click.echo(f'start:{start}, end: {end}')
         start = start.strip()
         end = end.strip()
         xoyelement = self.driver.find_elements_by_css_selector('.index-trend-chart')[0]
@@ -137,7 +139,7 @@ class Crawler:
 
         days = (arrow.get(end)-arrow.get(start)).days
         delta = math.ceil(365 / days * 2)
-        click.echo(f'当前的天数{days}是使用的扫描步频是,{delta}')
+        # click.echo(f'当前的天数{days}是使用的扫描步频是,{delta}')
         datas = []
 
         err_count = 0
@@ -154,7 +156,7 @@ class Crawler:
                 ret[0] = ret[0].split(' ')[0]
                 if len(datas) == 0:
                     datas.append(ret[0::2])
-                    click.echo(f'add, {ret[0::2]}, ---x-cord {x}')
+                    # click.echo(f'add, {ret[0::2]}, ---x-cord {x}')
                     x += delta
                 # 当获取到最后一天,终止循环
                 elif ret[0].startswith(end):
@@ -163,7 +165,7 @@ class Crawler:
                     break
                 # 当接近最后一天, 减少步频
                 elif arrow.get(datas[-1][0]).shift(days=1) == arrow.get(end):
-                    click.echo(f'快到终点，调整delta: {ret[0]}')
+                    # click.echo(f'快到终点，调整delta: {ret[0]}')
                     x += delta/5
                 # 当日期连续, 录入; 日期不连续, 回退
                 else:
@@ -171,10 +173,10 @@ class Crawler:
                     last_date = arrow.get(datas[-1][0])
                     if cur_date > last_date.shift(days=1):
                         x -= delta*3/4
-                        click.echo(f'日期不连续{ret[0]}, 需后退... --x-cord {x}')
+                        # click.echo(f'日期不连续{ret[0]}, 需后退... --x-cord {x}')
                     elif cur_date == last_date.shift(days=1):
                         datas.append(ret[0::2])
-                        click.echo(f'add, {ret[0::2]}, ---x-cord {x}')
+                        # click.echo(f'add, {ret[0::2]}, ---x-cord {x}')
                         if cur_date.shift(days=1) == arrow.get(end):
                             x += delta/8
                         else:
@@ -182,7 +184,7 @@ class Crawler:
                     else:
                         x += delta
             else:
-                click.echo(f'没有解析出日期,进行下一次扫描')
+                # click.echo(f'没有解析出日期,进行下一次扫描')
                 err_count += 1
                 x += delta
 
@@ -225,7 +227,7 @@ class Crawler:
             self.driver.find_elements_by_class_name('index-dropdown-list')[1].click()
         except Exception as e:
             return False
-        click.echo('正在打开终端选项,请稍候...')
+        # click.echo('正在打开终端选项,请稍候...')
         count = 0
         time.sleep(2)
         while count < self.max_try:
@@ -247,7 +249,7 @@ class Crawler:
         # 点击下拉列表
         count = 0
         self.driver.find_element_by_class_name('index-date-range-picker').click()
-        click.echo('正在打开时间选项,请稍候...')
+        # click.echo('正在打开时间选项,请稍候...')
         time.sleep(2)
         while count < self.max_try:
             try:
@@ -274,7 +276,7 @@ class Crawler:
         return ret
 
     def set_date(self, label, date):
-        click.echo(f'now we set date....{label},{date}')
+        # click.echo(f'now we set date....{label},{date}')
         idx = 0 if label == 'begin' else 1
         self.flag = idx + 2
         try:
@@ -341,75 +343,47 @@ def cli():
 @click.option('-e','--date2', help='结束日期,示例2018-09-10')
 @click.option('-t','--terminal', help='终端类型: pc/mobile/both, 默认both')
 @click.option('-o','--file_path', required=True, help='结果文件路径,只能是xlsx格式')
-def crawl(kws, date1, date2, file_path, terminal):
+@click.option('-n','--processes', default=4, help='进程数目')
+def crawl(kws, date1, date2, file_path, terminal, processes):
     kws = kws or raw_config['kws']
-    date1 = date1 or raw_config['start']
-    date2 = date2 or raw_config['end']
-    delta = (arrow.get(date2)-arrow.get(date1)).days + 1
-    all_days = [a.format('YYYY-MM-DD') for a in arrow.Arrow.range('day', arrow.get(date1), arrow.get(date2))]
+    begin = arrow.get(date1 or raw_config['start'])
+    end = arrow.get(date2 or raw_config['end'])
+    delta = (end - begin).days + 1
+    all_days = [a.format('YYYY-MM-DD') for a in arrow.Arrow.range('day', begin, end)]
 
     terminal = terminal or raw_config['terminal']
 
     start = time.time()
-    date_groups = split_groups(date1, date2)
-    click.echo(f'basic info <kws:{kws}>, <date:{date1}-{date2}>')
+    date_groups = split_groups(begin, end)
+    click.echo(f'basic info <kws:{kws}>, <date:{all_days[0]}-{all_days[-1]}>')
 
     kws = kws.split(',')
     # kws = Crawler.filter_valid_kws(kws)
     tdf = pd.DataFrame()
     undefined = []
     errs =[]
-    for idx in range(len(kws)//5 +1):
-        crawler = Crawler()
-        kw = kws[idx*5:(idx+1)*5]
-        if len(kw) == 0:
-            continue
-        click.echo(f'now we crawl for {kw}')
-        df = pd.DataFrame()
-        valid, undefined_kws = crawler.check_validation(kw)
-        print(valid, undefined_kws)
-        if not valid:
-            if len(undefined_kws) > 0:
-                undefined.extend(undefined_kws)
-                kw = [k for k in kw if k.lower() not in undefined_kws]
-                if len(kw) == 0:
+    step = 5
+    kw_group = [kws[i:i+step] for i in range(0,len(kws),step)]
+
+    pool = multiprocessing.Pool(processes)
+    single_task = functools.partial(single_crawl, date_groups, terminal=terminal)
+    iterable = pool.imap(single_task, kw_group)
+
+    with click.progressbar(iterable, len(kw_group)) as bar:
+        for df, undefined_kws in bar:
+
+            if len(df) > 0:
+                df = df.drop_duplicates(['date'])
+                df = df.set_index('date')
+                file_name = f"{'-'.join(df.columns.tolist())}_{terminal}.xlsx"
+                df.to_excel(os.path.join('temp', file_name),encoding='utf-8')
+                if len(undefined_kws) > 0:
+                    undefined.extend(undefined_kws)
                     click.echo(f'下列关键词未被百度指数收录: {undefined_kws}')
-                    continue
-                else:
-                    crawler.check_validation(kw)
+                tdf = pd.concat([tdf,df],axis=1)
             else:
-                click.echo('页面加载失败')
-                errs.extend(kw)
-                continue
-
-        time.sleep(3)
-        state = crawler.set_terminal(terminal)
-        if not state:
-            click.echo('终端选择错误, 退出')
-            errs.extend(kw)
-            continue
-        for date1, date2 in date_groups:
-            try:
-                click.echo(f'时间段{date1}-{date2}的数据')
-                state = crawler.set_date_range(date1, date2)
-                if state:
-                    click.echo(f'正在解析时间段{date1}-{date2}的数据')
-                    df = pd.concat([df, crawler.fetch_all_data(kw)])
-                elif not state:
-                    click.echo(f'时间设置错误, 跳过')
-
-            except Exception as e:
-                click.echo(f'error happend: {date1}-{date2}, {e}')
-
-        if len(df) > 0:
-            df = df.drop_duplicates(['date'])
-            df = df.set_index('date')
-            file_name = f"{'-'.join(kw)}_{terminal}.xlsx"
-            df.to_excel(os.path.join('temp', file_name),encoding='utf-8')
-            if len(undefined_kws) > 0:
-                click.echo(f'下列关键词未被百度指数收录: {undefined_kws}')
-            tdf = pd.concat([tdf,df],axis=1)
-        crawler.quit()
+                click.echo(f'single_crawl failed {undefined_kws}')
+                errs.extend(undefined_kws)
 
     tdf.to_excel(file_path, encoding='utf-8')
     click.echo('**************RESULT**************************')
@@ -434,10 +408,50 @@ def crawl(kws, date1, date2, file_path, terminal):
     return tdf
 
 
+def single_crawl(date_groups, kw, terminal='both'):
+    crawler = Crawler()
+    click.echo(f'now we crawl for {kw}')
+    df = pd.DataFrame()
+    valid, undefined_kws = crawler.check_validation(kw)
+    if not valid:
+        if len(undefined_kws) > 0:
+            undefined.extend(undefined_kws)
+            kw = [k for k in kw if k.lower() not in undefined_kws]
+            if len(kw) == 0:
+                click.echo(f'下列关键词未被百度指数收录: {undefined_kws}')
+                crawler.quit()
+                return df, undefined_kws
+            else:
+                crawler.check_validation(kw)
+        else:
+            click.echo('页面加载失败')
+            crawler.quit()
+            return df, kw
 
-def split_groups(date1, date2):
-    start = arrow.get(date1)
-    d2 = arrow.get(date2)
+    time.sleep(3)
+    state = crawler.set_terminal(terminal)
+    if not state:
+        click.echo('终端选择错误, 退出')
+        crawler.quit()
+
+        return df, kw
+
+    for date1, date2 in date_groups:
+        try:
+            # click.echo(f'时间段{date1}-{date2}的数据')
+            state = crawler.set_date_range(date1, date2)
+            if state:
+                click.echo(f'正在解析 <{kw}> 时间段 {date1}-{date2} 的数据')
+                df = pd.concat([df, crawler.fetch_all_data(kw)])
+            elif not state:
+                click.echo(f'时间设置错误, 跳过')
+        except Exception as e:
+            click.echo(f'error happend <{kw}>: {date1}-{date2}, {e}')
+    crawler.quit()
+    return df, undefined_kws
+
+
+def split_groups(start, d2):
     if d2 > arrow.now():
         d2 = arrow.now()
     ret = []
