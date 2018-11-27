@@ -14,6 +14,7 @@ import os
 import time
 import math
 import re
+import html
 
 import requests
 import arrow
@@ -34,6 +35,7 @@ class Crawler:
         # self.driver = webdriver.Chrome(chrome_options=chrome_options)
         self.driver = webdriver.Chrome()
         self.driver.maximize_window()
+        self.driver.set_window_size(1280,720)
         self.base_url = "http://index.baidu.com/v2/main/index.html#/trend/{}?words={}"
         self.max_try = 3
         self.base_cookie = {}
@@ -65,18 +67,26 @@ class Crawler:
     def filter_valid_kws(kws):
         url = "https://index.baidu.com/api/AddWordApi/checkWordsExists?word={}"
         undefined_kws = []
+        kws = list(map(lambda x:x.strip(), kws))
         for idx in range(len(kws)//5 +1):
             kw = kws[idx*5:(idx+1)*5]
-            print(kw)
             if len(kw) > 0:
                 format_kw = ','.join(kw).encode('utf-8')
+                print(format_kw)
                 r = requests.get(url.format(urllib.parse.quote(format_kw)), headers=dict(Cookie=raw_config['cookie']))
                 ret = r.json()
+                if ret['status'] == 0:
+                    r = requests.get(url.format(urllib.parse.quote(format_kw)), headers=dict(Cookie=raw_config['cookie']))
+                    ret = r.json()
+                print(ret)
                 if len(ret['data']['result']) > 0:
-                    undefined_kws.extend(ret['data']['result'][0]['word'].split(','))
+                    print(ret['data']['result'])
+                    unescaped_w = html.unescape(ret['data']['result'][0]['word'])
+                    undefined_kws.extend(unescaped_w.split(','))
+
         print(undefined_kws)
         valid_kws  = [x for x in kws if x.lower() not in undefined_kws]
-        return valid_kws
+        return valid_kws, undefined_kws
 
     def check_validation(self, kws):
         if len(kws) == 0:
@@ -345,7 +355,7 @@ def crawl(kws, date1, date2, file_path, terminal):
     click.echo(f'basic info <kws:{kws}>, <date:{date1}-{date2}>')
 
     kws = kws.split(',')
-    kws = Crawler.filter_valid_kws(kws)
+    # kws = Crawler.filter_valid_kws(kws)
     tdf = pd.DataFrame()
     undefined = []
     errs =[]
@@ -390,14 +400,15 @@ def crawl(kws, date1, date2, file_path, terminal):
 
             except Exception as e:
                 click.echo(f'error happend: {date1}-{date2}, {e}')
-        # print(df[:20])
-        df = df.drop_duplicates(['date'])
-        df = df.set_index('date')
-        file_name = f"{'-'.join(kw)}_{terminal}.xlsx"
-        df.to_excel(os.path.join('temp', file_name),encoding='utf-8')
-        if len(undefined_kws) > 0:
-            click.echo(f'下列关键词未被百度指数收录: {undefined_kws}')
-        tdf = pd.concat([tdf,df],axis=1)
+
+        if len(df) > 0:
+            df = df.drop_duplicates(['date'])
+            df = df.set_index('date')
+            file_name = f"{'-'.join(kw)}_{terminal}.xlsx"
+            df.to_excel(os.path.join('temp', file_name),encoding='utf-8')
+            if len(undefined_kws) > 0:
+                click.echo(f'下列关键词未被百度指数收录: {undefined_kws}')
+            tdf = pd.concat([tdf,df],axis=1)
         crawler.quit()
 
     tdf.to_excel(file_path, encoding='utf-8')
