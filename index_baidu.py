@@ -69,25 +69,28 @@ class Crawler:
     def filter_valid_kws(kws):
         url = "https://index.baidu.com/api/AddWordApi/checkWordsExists?word={}"
         undefined_kws = []
-        kws = list(map(lambda x:x.strip(), kws))
-        for idx in range(len(kws)//5 +1):
-            kw = kws[idx*5:(idx+1)*5]
-            if len(kw) > 0:
-                format_kw = ','.join(kw).encode('utf-8')
-                print(format_kw)
-                r = requests.get(url.format(urllib.parse.quote(format_kw)), headers=dict(Cookie=raw_config['cookie']))
-                ret = r.json()
-                if ret['status'] == 0:
+        # 百度合法性检查接口只能传入5个词, 但是可以通过+把多个词连起来当成一个词, 这里一次传入10词进行查询
+        kws = list(set(map(lambda x:x.strip().lower(), kws)))
+        kw_group = [kws[i:i+10] for i in range(0,len(kws),10)]
+        kw_group1 = map(lambda x: ['+'.join(x[i:i+2]) for i in range(0,len(x),2)], kw_group)
+        count = 0
+        for kw in kw_group1:
+            # print(kw)
+            format_kw = ','.join(kw).encode('utf-8')
+            while count < 3:
+                try:
                     r = requests.get(url.format(urllib.parse.quote(format_kw)), headers=dict(Cookie=raw_config['cookie']))
                     ret = r.json()
-                print(ret)
-                if len(ret['data']['result']) > 0:
-                    print(ret['data']['result'])
-                    unescaped_w = html.unescape(ret['data']['result'][0]['word'])
-                    undefined_kws.extend(unescaped_w.split(','))
-
-        print(undefined_kws)
-        valid_kws  = [x for x in kws if x.lower() not in undefined_kws]
+                    if len(ret['data']['result']) > 0:
+                        unescaped_w = html.unescape(ret['data']['result'][0]['word'])
+                        click.echo(f'检查到非法词 {unescaped_w}')
+                        undefined_kws.extend(unescaped_w.split(','))
+                    break
+                except Exception as e:
+                    click.echo(f'合法性检查出错 {ret}')
+                    count += 1
+        # print(undefined_kws)
+        valid_kws = list(set(kws).difference(undefined_kws))
         return valid_kws, undefined_kws
 
     def check_validation(self, kws):
@@ -357,12 +360,12 @@ def crawl(kws, date1, date2, file_path, terminal, processes):
     date_groups = split_groups(begin, end)
     click.echo(f'basic info <kws:{kws}>, <date:{all_days[0]}-{all_days[-1]}>')
 
-    kws = kws.split(',')
-    # kws = Crawler.filter_valid_kws(kws)
     tdf = pd.DataFrame()
     undefined = []
     errs =[]
     step = 5
+    kws = kws.split(',')
+    kws, undefined  = Crawler.filter_valid_kws(kws)
     kw_group = [kws[i:i+step] for i in range(0,len(kws),step)]
 
     pool = multiprocessing.Pool(processes)
@@ -415,7 +418,6 @@ def single_crawl(date_groups, kw, terminal='both'):
     valid, undefined_kws = crawler.check_validation(kw)
     if not valid:
         if len(undefined_kws) > 0:
-            undefined.extend(undefined_kws)
             kw = [k for k in kw if k.lower() not in undefined_kws]
             if len(kw) == 0:
                 click.echo(f'下列关键词未被百度指数收录: {undefined_kws}')

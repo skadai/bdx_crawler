@@ -2,3 +2,5 @@ pandas
 selenium
 arrow
 click
+requests
+urllib
