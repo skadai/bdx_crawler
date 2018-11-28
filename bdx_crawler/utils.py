@@ -159,13 +159,15 @@ class Crawler:
                 # click.echo(f'解析出的ret: {ret}')
                 err_count = 0
                 ret[0] = ret[0].split(' ')[0]
+                values = list(map(lambda x: int(x.strip().replace(',','')), ret[2::2]))
+                values.insert(0, ret[0])
                 if len(datas) == 0:
-                    datas.append(ret[0::2])
+                    datas.append(values)
                     # click.echo(f'add, {ret[0::2]}, ---x-cord {x}')
                     x += delta
                 # 当获取到最后一天,终止循环
                 elif ret[0].startswith(end):
-                    datas.append(ret[0::2])
+                    datas.append(values)
                     click.echo(f'已拿到最终数据 {ret[0::2]},跳出: --x-cord {x}')
                     break
                 # 当接近最后一天, 减少步频
@@ -180,7 +182,7 @@ class Crawler:
                         x -= delta*3/4
                         # click.echo(f'日期不连续{ret[0]}, 需后退... --x-cord {x}')
                     elif cur_date == last_date.shift(days=1):
-                        datas.append(ret[0::2])
+                        datas.append(values)
                         # click.echo(f'add, {ret[0::2]}, ---x-cord {x}')
                         if cur_date.shift(days=1) == arrow.get(end):
                             x += delta/8
