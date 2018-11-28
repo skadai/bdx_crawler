@@ -3,3 +3,4 @@ selenium
 arrow
 click
 requests
+openpyxl
