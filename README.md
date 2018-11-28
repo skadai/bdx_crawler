@@ -2,6 +2,8 @@
 
 > 百度指数爬虫
 
+[TOC]
+
 ### 安装
 
 - 根据操作系统下载chrome浏览器(70.0以上)和chrome驱动(70.0以上)，chrome驱动的下载地址是
@@ -60,13 +62,13 @@ Options:
 
 > 爬取梅西和c罗在`2018年10月`的`手机`端百度指数，将结果保存到`best_player.xlsx`中
 
-输入
+##### 输入
 
 ```shell
 bdx crawl -w 梅西,c罗 -b 2018-10-01 -e 2018-11-01 -t mobile -o best_player.xlsx
 ```
 
-输出
+##### 输出
 
 ```
 basic info <kws:梅西,c罗>, <date:2018-10-01-2018-11-01>,<mobile>
@@ -84,7 +86,7 @@ done, total cost time: 21.13531494140625
 
 
 
-#### Crawlf  配置文件设定爬虫参数
+#### Crawlf  文件设定爬虫参数
 
 **帮助命令** `bdx crawlf --help`
 
@@ -101,7 +103,7 @@ Options:
 
 > 爬取梅西和c罗在`2018年10月`的`PC`端百度指数，将结果保存到`best_player.xlsx`中
 
-输入
+##### 输入
 
 - `crawl_sample` 文件定义抓取的参数, 然后命令行`bdx crawlf crawl_sample`
 
@@ -120,7 +122,7 @@ processes = 4
 debug = 0
 ```
 
-输出
+##### 输出
 
 ```
 basic info <kws:梅西,c罗>, <date:2018-10-01-2018-11-01>,<pc>
@@ -136,7 +138,7 @@ done, total cost time: 20.8640398979187
 详细结果请前往best_player.xlsx查看
 ```
 
-工作原理
+### 工作原理
 
 1. 利用预制cookie跳过百度登录环节
 2. 对关键词进行预检查，排除未收录的关键词
