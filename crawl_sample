@@ -1,0 +1,12 @@
+# crawl_sample
+# 在等号后面设定你需要的参数, 不需要引号
+# kws 多个关键词用, 分开, 注意是英文逗号
+# start/end 日期的格式必须和样例保持一致
+
+kws = 梅西,c罗
+date1 = 2018-10-01
+date2 = 2018-11-01
+terminal = pc
+file_path = best_player.xlsx
+processes = 4
+debug = 0

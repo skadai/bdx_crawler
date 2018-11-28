@@ -131,5 +131,6 @@ dev/
 temp/
 *.xlsx
 *.csv
+secret
 
 
