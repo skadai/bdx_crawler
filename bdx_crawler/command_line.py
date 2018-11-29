@@ -39,7 +39,7 @@ def crawl(kws, date1, date2, file_path, province, terminal, processes, debug):
     """
     tdf = index_crawl(kws, date1, date2, province, terminal, processes, debug)
     tdf.to_excel(file_path, encoding='utf-8')
-    click.echo(f'详细结果请前往{file_path}查看')
+    click.echo(f'详细结果请前往 {file_path} 查看')
 
 
 @cli.command()
@@ -52,7 +52,7 @@ def crawlf(config_file):
     file_path = raw_config.pop('file_path')
     tdf = index_crawl(**raw_config)
     tdf.to_excel(file_path, encoding='utf-8')
-    click.echo(f'详细结果请前往{file_path}查看')
+    click.echo(f'详细结果请前往 {file_path} 查看')
 
 
 @cli.command()
@@ -63,9 +63,9 @@ def repair():
     file_path = os.path.join(ROOT_DIR, 'secret')
     valid, cookies = reset_cookie()
     if valid:
-        cookie_file = open(file_path, 'w', encoding='utf-8')
+        with open(file_path, 'w', encoding='utf-8') as c:
+            c.write(json.dumps(cookies))
         click.echo('恭喜你已经重新设置了cookie')
-        json.dump(cookies, cookie_file)
     else:
         click.echo('oops,出了点问题,你可以尝试手动替换cookie')
         click.echo(f'从浏览器复制百度cookie原始字符串覆盖文件{file_path}内容就好了')

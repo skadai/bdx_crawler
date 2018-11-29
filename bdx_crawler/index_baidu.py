@@ -131,6 +131,9 @@ def single_crawl(date_groups, kw, province='全国', terminal='both', debug=Fals
 
 def reset_cookie():
     crawler = Crawler(debug=True, repair=True)
+    url = crawler.make_url(['中国'])
+    crawler.driver.get(url)
+
     a = input('请在【浏览器】页面登录你的百度账户, 登录成功后在【命令行】按任意键继续')
     cookies = crawler.driver.get_cookies()
     crawler.quit()
