@@ -26,12 +26,12 @@
 
   ```shell
   Usage: bdx [OPTIONS] COMMAND [ARGS]...
-  
+
     百度指数爬虫
-  
+
   Options:
     --help  Show this message and exit.
-  
+
   Commands:
     crawl   输入参数进行百度指数抓取
     crawlf  根据文件配置进行百度指数抓取, 文件配置参考crawl_sample
@@ -173,7 +173,7 @@ done, total cost time: 20.8640398979187
 
 ####  1. 无法爬虫，最后打印一大堆日期...
 
-开启` -d`选项，看浏览器页面卡死在哪一步了，**如果是显示百度登录页面，则说明cookie失效了，请使用repair明亮更新**，其他情况请反馈问题
+开启` -d`选项，看浏览器页面卡死在哪一步了，**如果是显示百度登录页面，则说明cookie失效了，请使用repair命令更新**，其他情况请反馈问题
 
 #### 2. 报错`No such file or directory: '/Users/**/temp/**.xlsx'`
 
@@ -182,4 +182,3 @@ done, total cost time: 20.8640398979187
 #### 3. 报错 `selenium.common.exceptions.WebDriverException: Message: 'chromedriver' executable needs to be in PATH. Please see https://sites.google.com/a/chromium.org/chromedriver/home`
 
 你没有将chromedriver添加到环境变量PATH，请阅读**安装**一节  
-
