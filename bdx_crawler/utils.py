@@ -23,7 +23,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.action_chains import ActionChains
 
-from .config import raw_config
+from .config import raw_config, province_dict
 
 
 class Crawler:
@@ -246,6 +246,36 @@ class Crawler:
                 self.driver.find_elements_by_class_name('index-dropdown-list')[1].click()
                 time.sleep(1)
                 self.driver.find_elements_by_class_name('index-dropdown-list')[1].click()
+                time.sleep(2)
+                count += 1
+        return False
+
+    def set_province(self, province):
+        if province == '全国':
+            return True
+        gidx, pidx = -1, -1
+        for idx, group in enumerate(province_dict.values()):
+            if province in group:
+                gidx, pidx = idx, group.index(province)
+                break
+        if gidx == -1:
+            return False
+        try:
+            self.driver.find_elements_by_class_name('index-region')[0].click()
+        except Exception as e:
+            return False
+        count = 0
+        time.sleep(2)
+        while count < self.max_try:
+            try:
+                group = self.driver.find_elements_by_css_selector('.provinces-group-box')[gidx]
+                group.find_elements_by_css_selector('span')[pidx].click()
+                return True
+            except Exception as e:
+                click.echo(f'try time {count}: sth wrong {e}')
+                self.driver.find_elements_by_class_name('index-region')[0].click()
+                time.sleep(1)
+                self.driver.find_elements_by_class_name('index-region')[0].click()
                 time.sleep(2)
                 count += 1
         return False

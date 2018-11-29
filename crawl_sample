@@ -3,10 +3,11 @@
 # kws 多个关键词用, 分开, 注意是英文逗号
 # start/end 日期的格式必须和样例保持一致
 
-kws = 梅西,c罗
-date1 = 2018-10-01
-date2 = 2018-11-01
-terminal = pc
-file_path = best_player.xlsx
+kws = 李咏,陈羽凡,贝托鲁奇,蒋劲夫,范冰冰,贺建奎,特朗普
+date1 = 2018-11-01
+date2 = 2018-11-29
+terminal = both
+file_path = nov.xlsx
+province = 广东
 processes = 4
-debug = 0
+debug = 1

@@ -24,7 +24,7 @@ from .utils import Crawler, split_groups
 from .config import raw_config
 
 
-def index_crawl(kws, date1, date2, terminal='both', processes=4, debug=0):
+def index_crawl(kws, date1, date2, province='全国', terminal='both', processes=4, debug=0):
     start = time.time()
 
     begin = arrow.get(date1)
@@ -35,7 +35,7 @@ def index_crawl(kws, date1, date2, terminal='both', processes=4, debug=0):
     delta = (end - begin).days + 1
     all_days = [a.format('YYYY-MM-DD') for a in arrow.Arrow.range('day', begin, end)]
     date_groups = split_groups(begin, end)
-    click.echo(f'basic info <kws:{kws}>, <date:{all_days[0]}-{all_days[-1]}>,<{terminal}>')
+    click.echo(f'basic info <kws:{kws}>, <date:{all_days[0]}-{all_days[-1]}>,<terminal:{terminal}>,<province:{province}>')
 
     tdf = pd.DataFrame()
     errs = []
@@ -45,7 +45,7 @@ def index_crawl(kws, date1, date2, terminal='both', processes=4, debug=0):
     kw_group = [kws[i:i+step] for i in range(0,len(kws),step)]
     click.echo(f'共有{len(kws)}词需要爬取, 拆分为{len(kw_group)}个子任务')
     pool = multiprocessing.Pool(processes)
-    single_task = functools.partial(single_crawl, date_groups, terminal=terminal, debug=debug)
+    single_task = functools.partial(single_crawl, date_groups, province=province, terminal=terminal, debug=debug)
     iterable = pool.imap(single_task, kw_group)
 
     with click.progressbar(iterable, len(kw_group)) as bar:
@@ -54,7 +54,7 @@ def index_crawl(kws, date1, date2, terminal='both', processes=4, debug=0):
             if len(df) > 0:
                 df = df.drop_duplicates(['date'])
                 df = df.set_index('date')
-                file_name = f"{'-'.join(df.columns.tolist())}_{terminal}_{uuid.uuid4()}.xlsx"
+                file_name = f"{'_'.join(df.columns.tolist())}_{terminal}_{province}_{uuid.uuid4()}.xlsx"
                 df.to_excel(os.path.join(raw_config['temp_path'], file_name), encoding='utf-8')
                 if len(undefined_kws) > 0:
                     undefined.extend(undefined_kws)
@@ -81,7 +81,7 @@ def index_crawl(kws, date1, date2, terminal='both', processes=4, debug=0):
     return tdf
 
 
-def single_crawl(date_groups, kw, terminal='both', debug=False):
+def single_crawl(date_groups, kw, province='全国', terminal='both', debug=False):
     crawler = Crawler(debug=debug)
     click.echo(f'now we crawl for {kw}')
     df = pd.DataFrame()
@@ -105,7 +105,12 @@ def single_crawl(date_groups, kw, terminal='both', debug=False):
     if not state:
         click.echo('终端选择错误, 退出')
         crawler.quit()
+        return df, kw
 
+    state = crawler.set_province(province)
+    if not state:
+        click.echo('省份选择错误, 退出')
+        crawler.quit()
         return df, kw
 
     for date1, date2 in date_groups:
