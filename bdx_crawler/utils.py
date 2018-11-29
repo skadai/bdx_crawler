@@ -13,6 +13,7 @@
 import time
 import math
 import html
+import json
 
 import requests
 import arrow
@@ -27,7 +28,7 @@ from .config import raw_config, province_dict
 
 
 class Crawler:
-    def __init__(self, debug=False):
+    def __init__(self, debug=False, repair=False):
         if debug:
             self.driver = webdriver.Chrome()
         else:
@@ -36,23 +37,36 @@ class Crawler:
             self.driver = webdriver.Chrome(chrome_options=chrome_options)
         self.base_url = "http://index.baidu.com/v2/main/index.html#/trend/{}?words={}"
         self.max_try = 3
-        self.base_cookie = {}
         self.ranger = {}
         self.flag = 0
         self.confirm = 1
-        self.init_driver()
+        self.init_driver(repair)
 
-    def init_driver(self):
+    def init_driver(self, repair):
         # 先进入指定的网页, 然后才能替换cookie
         self.driver.maximize_window()
         self.driver.set_window_size(1920, 1080)
         self.driver.get('http://index.baidu.com')
-        for item in raw_config['cookie'].split(';'):
-            kv = item.strip().split('=')
-            self.base_cookie[kv[0]] = '='.join(kv[1:])
-        self.driver.delete_all_cookies()
-        for k, v in self.base_cookie.items():
-            self.driver.add_cookie({'name': k, 'value': v})
+        if not repair:
+            cookies = self.load_cookies()
+            self.driver.delete_all_cookies()
+            for k, v in cookies.items():
+                self.driver.add_cookie({'name': k, 'value': v})
+
+    @classmethod
+    def load_cookies(cls):
+        # cookie有数组和原始字符串两种形式
+        format_cookies = {}
+        try:
+            cookies = json.loads(raw_config['cookie'])
+            for c in cookies:
+                format_cookies[c['name']]=c['value']
+        except Exception as e:
+            cookies = {}
+            for item in raw_config['cookie'].split(';'):
+                kv = item.strip().split('=')
+                format_cookies[kv[0]] = '='.join(kv[1:])
+        return format_cookies
 
     def make_url(self, keywords):
         words = []
@@ -61,8 +75,8 @@ class Crawler:
         url = self.base_url.format(words[0], ','.join(words))
         return url
 
-    @staticmethod
-    def filter_valid_kws(kws):
+    @classmethod
+    def filter_valid_kws(cls, kws):
         url = "https://index.baidu.com/api/AddWordApi/checkWordsExists?word={}"
         undefined_kws = []
 
@@ -83,7 +97,9 @@ class Crawler:
             format_kw = ','.join(kw).encode('utf-8')
             while count < 3:
                 try:
-                    r = requests.get(url.format(urllib.parse.quote(format_kw)), headers=dict(Cookie=raw_config['cookie']))
+                    cookies = cls.load_cookies()
+                    # print('目前拿到的cookie', cookies)
+                    r = requests.get(url.format(urllib.parse.quote(format_kw)), cookies=cookies)
                     ret = r.json()
                     # print(ret)
                     if len(ret['data']['result']) > 0:
@@ -92,6 +108,7 @@ class Crawler:
                         undefined_kws.extend(unescaped_w.split(','))
                     break
                 except Exception as e:
+                    print(e)
                     click.echo(f'合法性检查出错 {ret}')
                     count += 1
         valid_kws = list(set(kws).difference(undefined_kws))

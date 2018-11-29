@@ -15,6 +15,7 @@ import time
 import functools
 import multiprocessing
 import uuid
+import json
 
 import arrow
 import pandas as pd
@@ -126,3 +127,17 @@ def single_crawl(date_groups, kw, province='全国', terminal='both', debug=Fals
             click.echo(f'error happend <{kw}>: {date1}-{date2}, {e}')
     crawler.quit()
     return df, undefined_kws
+
+
+def reset_cookie():
+    crawler = Crawler(debug=True, repair=True)
+    a = input('请在【浏览器】页面登录你的百度账户, 登录成功后在【命令行】按任意键继续')
+    cookies = crawler.driver.get_cookies()
+    crawler.quit()
+
+    click.echo('正在检查请稍候....')
+    crawler1 = Crawler(debug=False, repair=True)
+    for c in cookies:
+        crawler1.driver.add_cookie(c)
+    valid, _ = crawler1.check_validation(['中国'])
+    return valid, cookies

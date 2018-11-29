@@ -1,2 +1,3 @@
 include README.md
 include crawl_sample
+include bdx_crawler/secret

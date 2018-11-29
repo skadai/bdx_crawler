@@ -6,9 +6,14 @@
 __author__ = 'changsk'
 
 import click
+import os
+import json
 
-from .index_baidu import index_crawl
+from .index_baidu import index_crawl, reset_cookie
 from .utils import load_config
+
+
+ROOT_DIR = os.path.dirname(__file__)
 
 
 @click.group()
@@ -26,12 +31,13 @@ def cli():
 @click.option('-t', '--terminal', default='both', help='终端类型: pc/mobile/both, 默认both')
 @click.option('-o', '--file_path', required=True, help='结果文件路径, 只支持xlsx')
 @click.option('-n', '--processes', default=4, help='进程数目, 默认为4')
+@click.option('-p', '--province', default='全国', help='省份, 默认全国')
 @click.option('-d', '--debug', is_flag=True, help='是否为debug模式,默认关闭')
-def crawl(kws, date1, date2, file_path, terminal, processes, debug):
+def crawl(kws, date1, date2, file_path, province, terminal, processes, debug):
     """
     输入参数进行百度指数抓取
     """
-    tdf = index_crawl(kws, date1, date2, terminal, processes, debug)
+    tdf = index_crawl(kws, date1, date2, province, terminal, processes, debug)
     tdf.to_excel(file_path, encoding='utf-8')
     click.echo(f'详细结果请前往{file_path}查看')
 
@@ -47,6 +53,23 @@ def crawlf(config_file):
     tdf = index_crawl(**raw_config)
     tdf.to_excel(file_path, encoding='utf-8')
     click.echo(f'详细结果请前往{file_path}查看')
+
+
+@cli.command()
+def repair():
+    """
+    引导用户进行cookie重新设置
+    """
+    file_path = os.path.join(ROOT_DIR, 'secret')
+    valid, cookies = reset_cookie()
+    if valid:
+        cookie_file = open(file_path, 'w', encoding='utf-8')
+        click.echo('恭喜你已经重新设置了cookie')
+        json.dump(cookies, cookie_file)
+    else:
+        click.echo('oops,出了点问题,你可以尝试手动替换cookie')
+        click.echo(f'从浏览器复制百度cookie原始字符串覆盖文件{file_path}内容就好了')
+
 
 
 if __name__ == '__main__':

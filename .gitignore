@@ -131,6 +131,5 @@ dev/
 temp/
 *.xlsx
 *.csv
-secret
 .ipynb_checkpoints/*
 *.ipynb
