@@ -22,20 +22,20 @@
   pip install git+https://git.coding.net/Brahms213/baidu.git
   ```
 
-- 输入下面的命令 `bdx crawl --help`,如果能看到下面的程序帮助，则说明安装成功
+- 输入命令 `bdx `,如果能看到下面的程序帮助，则说明安装成功
 
   ```shell
-  Usage: bdx crawl [OPTIONS]
+  Usage: bdx [OPTIONS] COMMAND [ARGS]...
+  
+    百度指数爬虫
   
   Options:
-    -w, --kws TEXT           待查询关键词, 不得超过五个,逗号分开
-    -b, --date1 TEXT         起始日期,示例2018-08-19
-    -e, --date2 TEXT         结束日期,示例2018-09-10
-    -t, --terminal TEXT      终端类型: pc/mobile/both, 默认both
-    -o, --file_path TEXT     结果文件路径,只能是xlsx格式
-    -n, --processes INTEGER  进程数目
-    -d, --debug              是否为debug模式,默认关闭
-    --help                   Show this message and exit.
+    --help  Show this message and exit.
+  
+  Commands:
+    crawl   输入参数进行百度指数抓取
+    crawlf  根据文件配置进行百度指数抓取, 文件配置参考crawl_sample
+    repair  引导用户进行cookie重新设置
   ```
 
 ### 使用
@@ -47,13 +47,16 @@
 ```shell
 Usage: bdx crawl [OPTIONS]
 
+  输入参数进行百度指数抓取
+
 Options:
-  -w, --kws TEXT           待查询关键词, 不得超过五个,逗号分开
-  -b, --date1 TEXT         起始日期,示例2018-08-19
-  -e, --date2 TEXT         结束日期,示例2018-09-10
+  -w, --kws TEXT           待查询关键词, 英文逗号,分开  [required]
+  -b, --date1 TEXT         起始日期,默认2018-01-01
+  -e, --date2 TEXT         结束日期,示例2018-11-11
   -t, --terminal TEXT      终端类型: pc/mobile/both, 默认both
-  -o, --file_path TEXT     结果文件路径,只能是xlsx格式
-  -n, --processes INTEGER  进程数目
+  -o, --file_path TEXT     结果文件路径, 只支持xlsx  [required]
+  -n, --processes INTEGER  进程数目, 默认为4
+  -p, --province TEXT      省份, 默认全国
   -d, --debug              是否为debug模式,默认关闭
   --help                   Show this message and exit.
 ```
@@ -107,7 +110,7 @@ Options:
 
 - `crawl_sample` 文件定义抓取的参数, 然后命令行`bdx crawlf crawl_sample`
 
-```text
+```shell
 # crawl_sample
 # 在等号后面设定你需要的参数, 不需要引号
 # kws 多个关键词用, 分开, 注意是英文逗号
@@ -118,13 +121,14 @@ date1 = 2018-10-01
 date2 = 2018-11-01
 terminal = pc
 file_path = best_player.xlsx
+province = 全国
 processes = 4
 debug = 0
 ```
 
 ##### 输出
 
-```
+```shell
 basic info <kws:梅西,c罗>, <date:2018-10-01-2018-11-01>,<pc>
 共有2词需要爬取, 拆分为1个子任务
   [------------------------------------]    0%now we crawl for ['c罗', '梅西']
@@ -138,11 +142,9 @@ done, total cost time: 20.8640398979187
 详细结果请前往best_player.xlsx查看
 ```
 
-
-
 #### repair 重置cookie
 
-> 如果预置的cookie 可能会失效，用户需要人工替换为合法的cookie。你可以手动复制百度的cookie到本模块安装目录下的secret文件覆盖其内容，也可以执行本命令。**secret文件内容务必妥善保管!!!!**
+> 预置的cookie 可能会失效，此时用户需要人工设置合法的cookie。你可以手动复制百度的cookie到本模块安装目录下的secret文件覆盖其内容，也可以执行本命令。**secret文件内容务必妥善保管!!!!**
 
 ##### 输入
 
@@ -166,4 +168,18 @@ done, total cost time: 20.8640398979187
 3. 5个关键词一组进行查询，selenium模拟点击设定关键词，时间范围，终端类型
 4. selenium模拟移动光标解析不同日期的数据
 5. 将不同关键词，不同时间范围的数据进行拼接，输出错误信息(如果有的话)
+
+### FAQ
+
+####  1. 无法爬虫，最后打印一大堆日期...
+
+开启` -d`选项，看浏览器页面卡死在哪一步了，**如果是显示百度登录页面，则说明cookie失效了，请使用repair明亮更新**，其他情况请反馈问题
+
+#### 2. 报错`No such file or directory: '/Users/**/temp/**.xlsx'`
+
+你可以没有设置BDX_TEMP环境变量，请阅读**安装**一节  
+
+#### 3. 报错 `selenium.common.exceptions.WebDriverException: Message: 'chromedriver' executable needs to be in PATH. Please see https://sites.google.com/a/chromium.org/chromedriver/home`
+
+你没有将chromedriver添加到环境变量PATH，请阅读**安装**一节  
 
