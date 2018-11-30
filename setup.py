@@ -4,7 +4,6 @@
 # @Date    : 2018-11-28
 # @Author  : skym
 
-# -*- coding: utf-8 -*-
 from setuptools import setup
 
 

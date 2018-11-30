@@ -19,10 +19,10 @@
 - 安装本模块
 
   ```shell
-  pip install git+https://git.coding.net/Brahms213/baidu.git
+  pip install git+https://e.coding.net/yimian/bdx_crawler.git
   ```
 
-- 输入命令 `bdx `,如果能看到下面的程序帮助，则说明安装成功
+- 输入命令 `bdx `,如果能看到下面的帮助打印，则说明安装成功
 
   ```shell
   Usage: bdx [OPTIONS] COMMAND [ARGS]...
@@ -40,7 +40,7 @@
 
 ### 使用
 
-#### crawl 命令行参数设定爬虫参数
+#### crawl --命令行参数设定爬虫参数
 
 **帮助命令** `bdx crawl --help`
 
@@ -89,7 +89,7 @@ done, total cost time: 21.13531494140625
 
 
 
-#### crawlf  文件设定爬虫参数
+#### crawlf  --文件设定爬虫参数
 
 **帮助命令** `bdx crawlf --help`
 
@@ -142,13 +142,13 @@ done, total cost time: 20.8640398979187
 详细结果请前往best_player.xlsx查看
 ```
 
-#### repair 重置cookie
+#### repair --重置cookie
 
-> 预置的cookie 可能会失效，此时用户需要人工设置合法的cookie。你可以手动复制百度的cookie到本模块安装目录下的secret文件覆盖其内容，也可以执行本命令。**secret文件内容务必妥善保管!!!!**
+> 预置的cookie 可能会失效，此时需要人工设置合法的cookie。你可以手动复制百度的cookie到本模块安装目录下覆盖secret内容，也可以执行本命令。**secret文件内容务必妥善保管!!!**
 
 ##### 输入
 
-- `bdx repair`此时浏览器打开百度登录页面, 输入合法的用户名密码登录成功后，命令行回车
+- `bdx repair`浏览器打开百度登录页面, 输入合法的用户名密码登录成功后，命令行回车
 
 ##### 输出
 
@@ -161,7 +161,7 @@ done, total cost time: 20.8640398979187
 
 当看到命令行提示重置cookie成功后，即可继续进行正常的百度指数抓取操作
 
-### 工作原理
+### 工作过程
 
 1. 利用预制cookie跳过百度登录环节
 2. 对关键词进行预检查，排除未收录的关键词
@@ -177,8 +177,8 @@ done, total cost time: 20.8640398979187
 
 #### 2. 报错`No such file or directory: '/Users/**/temp/**.xlsx'`
 
-你可以没有设置BDX_TEMP环境变量，请阅读**安装**一节  
+你没有设置BDX_TEMP环境变量，请阅读 [安装](#安装) 一节  
 
 #### 3. 报错 `selenium.common.exceptions.WebDriverException: Message: 'chromedriver' executable needs to be in PATH. Please see https://sites.google.com/a/chromium.org/chromedriver/home`
 
-你没有将chromedriver添加到环境变量PATH，请阅读**安装**一节  
+你没有将chromedriver添加到环境变量PATH，请阅读 [安装](#安装)一节  
