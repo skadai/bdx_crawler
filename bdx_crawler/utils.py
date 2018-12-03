@@ -377,7 +377,8 @@ class Crawler:
         # print('set day ok')
 
     def quit(self):
-        self.driver.close()
+        # 此处必须使用quit否则会多出来一堆垃圾进程
+        self.driver.quit()
 
 
 def split_groups(start, d2):
