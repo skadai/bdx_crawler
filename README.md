@@ -10,9 +10,7 @@
 
   https://npm.taobao.org/mirrors/chromedriver/71.0.3578.33/
 
-- 将chromedriver所在路径加入系统path变量，操作方法请自行百度
-
-- **增加`BDX_TEMP`环境变量, 指定中间文件保存的路径**，操作方法自行百度
+  将chromedriver所在路径加入系统path变量，增加`BDX_TEMP`环境变量, 指定中间文件保存的路径，操作方法自行百度
 
   >本模块使用selenium爬虫百度指数，需要光标在页面中移动进行解析，有一定概率遇到无法定位页面元素导致程序失败，此时如果保存了中间文件，则重新从失败位置继续抓取即可
 
@@ -22,21 +20,40 @@
   pip install git+https://e.coding.net/yimian/bdx_crawler.git
   ```
 
-- 输入命令 `bdx `,如果能看到下面的帮助打印，则说明安装成功
+  完成后输入命令 `bdx `,如果能看到下面的帮助打印，则说明安装成功
 
   ```shell
   Usage: bdx [OPTIONS] COMMAND [ARGS]...
-
+  
     百度指数爬虫
-
+  
   Options:
     --help  Show this message and exit.
-
+  
   Commands:
     crawl   输入参数进行百度指数抓取
     crawlf  根据文件配置进行百度指数抓取, 文件配置参考crawl_sample
     repair  引导用户进行cookie重新设置
   ```
+
+- **[很重要] 强烈建议在使用前重置cookie为自己的百度合法cookie**
+
+  > 预置的cookie 可能失效，此时需要人工设置合法的cookie。你可以手动复制百度的cookie到本模块安装目录下覆盖secret内容，也可以执行本命令。**secret文件内容务必妥善保管!!!**
+
+  ##### 输入
+
+  - `bdx repair`浏览器打开百度登录页面, 输入合法的用户名密码登录成功后，命令行回车
+
+  ##### 输出
+
+  ```shell
+  ➜  baidu git:(master) ✗ bdx repair
+  请在【浏览器】页面登录你的百度账户, 登录成功后在【命令行】按任意键继续
+  正在检查请稍候....
+  恭喜你已经重新设置了cookie
+  ```
+
+  当看到命令行提示重置cookie成功后，即可继续进行正常的百度指数抓取操作
 
 ### 使用
 
@@ -141,25 +158,6 @@ done, total cost time: 20.8640398979187
 所有日期都已经成功抓取了!
 详细结果请前往best_player.xlsx查看
 ```
-
-#### repair --重置cookie
-
-> 预置的cookie 可能会失效，此时需要人工设置合法的cookie。你可以手动复制百度的cookie到本模块安装目录下覆盖secret内容，也可以执行本命令。**secret文件内容务必妥善保管!!!**
-
-##### 输入
-
-- `bdx repair`浏览器打开百度登录页面, 输入合法的用户名密码登录成功后，命令行回车
-
-##### 输出
-
-```shell
-➜  baidu git:(master) ✗ bdx repair
-请在【浏览器】页面登录你的百度账户, 登录成功后在【命令行】按任意键继续
-正在检查请稍候....
-恭喜你已经重新设置了cookie
-```
-
-当看到命令行提示重置cookie成功后，即可继续进行正常的百度指数抓取操作
 
 ### 工作过程
 
