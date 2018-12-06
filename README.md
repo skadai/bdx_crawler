@@ -6,6 +6,8 @@
 
 ### 安装
 
+#### 安装chrome
+
 - 根据操作系统下载chrome浏览器**(70.0以上)**和chrome驱动**(70.0以上)**，chrome驱动的下载地址是
 
   https://npm.taobao.org/mirrors/chromedriver/71.0.3578.33/
@@ -14,7 +16,7 @@
 
   >本模块使用selenium爬虫百度指数，需要光标在页面中移动进行解析，有一定概率遇到无法定位页面元素导致程序失败，此时如果保存了中间文件，则重新从失败位置继续抓取即可
 
-- 安装本模块
+#### 安装本模块
 
   ```shell
   pip install git+https://e.coding.net/yimian/bdx_crawler.git
@@ -36,7 +38,9 @@
     repair  引导用户进行cookie重新设置
   ```
 
-- **[很重要] 在使用前`务必`重置cookie为自己的百度合法cookie**
+#### [重要]设置COOKIE
+
+- **在使用前`务必`重置cookie为自己的百度合法cookie**
 
   > 预置的cookie 可能失效，此时需要人工设置合法的cookie。你可以手动复制百度的cookie到本模块安装目录下覆盖secret内容，也可以执行本命令。**secret文件内容请妥善保管!!!**
 
