@@ -255,7 +255,7 @@ class Crawler:
         time.sleep(2)
         while count < self.max_try:
             try:
-                options = self.driver.find_elements_by_css_selector('.list-wrapper')[1]
+                options = self.driver.find_elements_by_css_selector('.list-wrapper')[2]
                 options.find_elements_by_class_name('list-item')[idx].click()
                 return True
             except Exception as e:
